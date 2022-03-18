@@ -1,0 +1,9 @@
+A,B,C,D
+1,2,3,'Good'
+4,,6,'Good'
+7,,9,'Excellent'
+10,11,12,
+13,14,15,'Excellent'
+16,17,,'Fair'
+19,12,12,'Excellent'
+20,11,23,'Fair'
