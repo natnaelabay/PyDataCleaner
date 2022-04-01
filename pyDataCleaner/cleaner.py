@@ -6,6 +6,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
 
 
 class AutoCleaner:
@@ -308,3 +310,4 @@ class AutoCleaner:
             print("Please choose a valid encoding type")
 
         return self
+    
