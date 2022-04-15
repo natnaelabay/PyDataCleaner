@@ -1,58 +1,152 @@
-from pydoc import doc
+from sklearn.datasets import make_regression
+import matplotlib as pt
+from sklearn.model_selection import train_test_split
+from sklearn.feature_selection import SelectKBest, f_regression
+from matplotlib import pyplot as pt
 import pandas as pd
 import numpy as np
-from IPython.display import display
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import LabelEncoder
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import chi2
 
 
-class FeatureSelector:
-    def __init__(self, df):
-        self.df = df
+def numerical_feature_selection(df, labels, test_size, percentage, k, selection_function=f_regression):
+    '''
+    params: 
+        `df`: DataFrame
+        `test_size` : test_size from 0 - 1
+        `percentage` : train and test spliting percentage
+        `k` : number of features that will be selected
+        `selection_function` : A selection function if not provided default is f_regression/mutual_info_regression from the `sklearn.feature_selection` module. 
+        `labels` : list of column names that the model will try to predict
+    '''
+    features = [col for col in df.columns.values if col not in labels]
+    x_train, x_test, y_train, y_test = train_test_split(
+        df[features],
+        df[labels],
+        test_size=test_size
+    )
 
-    def __auto_selector(self):
-        """
-        accepts out_out and input columns and applies the ncessary feature selection algorithms from sklearn library
+    fs = SelectKBest(
+        score_func=selection_function,
+        k=k
+    )
 
-        """
-        # impute missing values
-        imp = SimpleImputer(missing_values=np.nan, strategy='mean')
-        imp.fit(self.df)
-        self.df = pd.DataFrame(imp.transform(self.df), columns=self.df.columns)
+    fs.fit(x_train, y_train)
+    x_train_fs = fs.transform(x_train)
+    x_test_fs = fs.transform(x_test)
+    pt.bar([i for i in range(len(fs.scores_))], fs.scores_)
+    return x_train_fs, x_test_fs, y_train, y_test
 
-        # encode categorical data
-        le = LabelEncoder()
-        for col in self.df.columns:
-            if self.df[col].dtype == 'object':
-                self.df[col] = le.fit_transform(self.df[col])
 
-        # create correlation matrix
-        corr = self.df.corr()
-        # plot correlation matrix
-        fig, ax = plt.subplots(figsize=(10, 10))
-        sns.heatmap(corr, mask=np.zeros_like(corr, dtype=np.bool), cmap=sns.diverging_palette(220, 10, as_cmap=True),
-                    square=True, ax=ax)
-        plt.show()
+def test_regression_model(
+    x_train_ts,
+    x_test_ts,
+    y_train,
+    y_test,
+):
+    '''
+    This methods tests a data set with a regression model
+    '''
+    from sklearn.linear_model import LinearRegression
+    from sklearn.metrics import mean_absolute_error
+    from sklearn.metrics import mean_squared_error
 
-        # select features based on correlation
-        corr_var = corr.index
-        corr_var = corr_var[abs(corr[corr_var] > 0.8)]
-        print(corr_var)
+    model = LinearRegression()
+    model.fit(x_train_ts, y_train)
+    y_pred = model.predict(x_test_ts)
+    print('MAE(Mean Absolute Error): ', mean_absolute_error(y_test, y_pred))
+    print('MSE(Mean Squared Error): ', mean_squared_error(y_test, y_pred))
+    return model
 
-        # select features based on chi-square test
-        X = self.df.drop(['out_out'], axis=1)
-        y = self.df['out_out']
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-        X_train.shape, X_test.shape, y_train.shape, y_test.shape
 
-        # select best features based on chi-square test
-        chi2_selector = SelectKBest(chi2, k=10)
-        chi2_selector.fit(X_train, y_train)
-        chi2_selector.get_support()
+# Categorical feature selection
 
-        # select best features based on correlation
-        corr_selector = SelectKBest(chi2, k=10)
+
+def categorical_feature_selection(
+    df: pd.DataFrame,
+    labels,
+    test_size,
+    selection_func,
+    k="all",
+):
+    '''
+    This method will select categorical features
+    '''
+    from sklearn.feature_selection import SelectKBest, chi2
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
+
+    features = [col for col in df.columns.values if col not in labels]
+
+    features_df = df[features].astype(str)
+
+    x_train, x_test, y_train, y_test = train_test_split(
+        features_df,
+        df[labels],
+        test_size=test_size
+    )
+
+    # encode input features/data
+
+    encoder = OrdinalEncoder()
+    encoder.fit(x_train)
+    x_train_encoded = encoder.transform(x_train)
+    x_test_encoded = encoder.transform(x_test)
+
+    # encode target variables using LabelEncoder
+
+    le_encoder = LabelEncoder()
+    le_encoder.fit(y_train)
+
+    y_train_encoded = le_encoder.transform(y_train)
+    y_test_encoded = le_encoder.transform(y_test)
+
+    # 1. Mutual information feature with (mutual_info_classif)
+    # 2. Mutual information feature with chi-squared (chi2)
+
+    fs = SelectKBest(
+        score_func=selection_func,
+        k=k
+    )
+
+    fs.fit(x_train_encoded, y_train_encoded)
+    x_train_fs = fs.transform(x_train_encoded)
+    x_test_fs = fs.transform(x_test_encoded)
+
+    pt.bar([i for i in range(len(fs.scores_))], fs.scores_)
+    pt.show()
+
+    return x_train_fs, x_test_fs, fs
+
+
+def rfe_for_regression(
+    X,
+    y,
+):
+    '''
+    This method will test the model with the test data set
+    '''
+
+    from numpy import mean
+    from numpy import std
+    from sklearn.pipeline import Pipeline
+    from sklearn.tree import DecisionTreeRegressor
+    from sklearn.model_selection import RepeatedKFold
+    from sklearn.model_selection import cross_val_score
+    from sklearn.feature_selection import RFE
+
+    rfe = RFE(estimator=DecisionTreeRegressor(), n_features_to_select=5)
+    model = DecisionTreeRegressor()
+    pipeline = Pipeline(steps=[('s', rfe), ('m', model)])
+    # evaluate model
+    cv = RepeatedKFold(n_splits=10, n_repeats=3, random_state=1)
+    n_scores = cross_val_score(
+        pipeline,
+        X,
+        y,
+        scoring='neg_mean_absolute_error',
+        cv=cv,
+        n_jobs=-1)
+    # report performance
+    print('MAE: %.3f (%.3f)' % (mean(n_scores), std(n_scores)))
+
+    return model
+

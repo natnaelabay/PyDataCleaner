@@ -92,7 +92,6 @@ class AutoCleaner:
             axis: int = 1,
             missing_values=np.nan,
             categorical_columns=None,
-
     ):
         '''
         This function will handle missing values in the dataframe.
@@ -132,7 +131,7 @@ class AutoCleaner:
             columns = [
                 col for col in columns if col not in drop_non_numerical
             ]
-            print(columns)
+
             self.temp_df.drop(
                 drop_non_numerical,
                 axis=axis,
@@ -140,50 +139,52 @@ class AutoCleaner:
             )
             columns = self.temp_df.columns.tolist()
 
-        if strategy:
-            self.non_numeric_df = None
+        # if strategy:
+        self.non_numeric_df = None
+        non_numeric_columns = self.temp_df.select_dtypes(
+            include=np.object).columns.tolist()
+        numeric_columns = self.temp_df.select_dtypes(
+            include=np.number).columns.tolist()
+
+        if len(non_numeric_columns) != 0:
+            self.non_numeric_df = self.temp_df[non_numeric_columns]
+
+            self.temp_df.drop(
+                non_numeric_columns,
+                axis="columns",
+                inplace=True
+            )
+
+            # null or nan values for non numeric values will be filed by using their mode
+
+            self.non_numeric_df = self.non_numeric_df.fillna(
+                self.non_numeric_df
+                .mode()
+                .iloc[0]
+            )
+
             non_numeric_columns = self.temp_df.select_dtypes(
                 include=np.object).columns.tolist()
-            numeric_columns = self.temp_df.select_dtypes(
-                include=np.number).columns.tolist()
 
-            if len(non_numeric_columns) != 0:
-                self.non_numeric_df = self.temp_df[non_numeric_columns]
-
-                self.temp_df.drop(
-                    non_numeric_columns,
-                    axis="columns",
-                    inplace=True
-                )
-
-                self.non_numeric_df = self.non_numeric_df.fillna(
-                    self.non_numeric_df
-                    .mode()
-                    .iloc[0]
-                )
-
-                non_numeric_columns = self.temp_df.select_dtypes(
-                    include=np.object).columns.tolist()
-
-            if len(numeric_columns) != 0:
-                self.temp_df.replace('?', missing_values, inplace=True)
-                imp = SimpleImputer(missing_values=np.NaN)
-                idf = pd.DataFrame(imp.fit_transform(self.temp_df))
-                idf.columns = self.temp_df.columns
-                idf.index = self.temp_df.index
-                self.temp_df = idf
-                self.temp_df = idf.round(decimals=2)
-                if self.non_numeric_df is not None:
-                    self.temp_df = self.temp_df.join(self.non_numeric_df)
-            else:
-                print(non_numeric_columns)
-                if len(non_numeric_columns) != 0:
-                    self.temp_df = self.non_numeric_df
-                    return self.non_numeric_df
-            # return self.temp_df
-            return self
+        if len(numeric_columns) != 0:
+            self.temp_df.replace('?', missing_values, inplace=True)
+            imp = SimpleImputer(missing_values=np.NaN, strategy=strategy)
+            idf = pd.DataFrame(imp.fit_transform(self.temp_df))
+            idf.columns = self.temp_df.columns
+            idf.index = self.temp_df.index
+            self.temp_df = idf
+            self.temp_df = idf.round(decimals=2)
+            if self.non_numeric_df is not None:
+                self.temp_df = self.temp_df.join(self.non_numeric_df)
         else:
-            pass
+            print(non_numeric_columns)
+            if len(non_numeric_columns) != 0:
+                self.temp_df = self.non_numeric_df
+                # return self.non_numeric_df
+        # return self.temp_df
+        return self
+        # else:
+            # pass
 
     def plot_missing_values(self):
         '''
