@@ -171,6 +171,8 @@ cleaner.encode_categorical_columns("one-hot").temp_df.head()
 ![](./images/encoded.png)
 
 <b>Lets not forget we have not still use `.commit()` to persist our dataframe</b>
+### NB: if you do not want to call all the functions in the AutoCleaner class you can use `auto_clean` function to perform all the steps in one go. (but this is not recommended, its better to customize the hyperparameters as it suits your needs)
+<br>
 
 ### Feature transformation 
 
@@ -275,3 +277,7 @@ params:
 
 # All that is needed is to call the function and pass the dataframe and the labels. Along with the test size and the selection function. and a tuple will be returned with the training and testing dataframes.
 ```
+
+## Dimensionality reduction 
+
+TODO:  add dimensionality reduction (adding currently)
