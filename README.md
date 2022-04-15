@@ -25,11 +25,11 @@ project
 │
 └───pyDataCleaner
 │   │   __init__.py
-│   │   auto_cleaner.py
-│   │   feature_selector.py
-|___Images
-│   │   *
-|___README.md
+│   │   cleaner.txt
+│   │
+│   └───components
+│       │   feature_selector.py
+│       │   file112.txt
 ```
 
 There are only a few classes in this modules most people will only be working with the `AutoCleaner` class, which as the name suggests automates all the tiresome work and gives you an elegant API to work with. <br>
