@@ -21,15 +21,17 @@ File Structure
 
 ```
 project
-│   README.md
-│
+│   
 └───pyDataCleaner
 │   │   __init__.py
-│   │   cleaner.txt
-│   │
-│   └───components
-│       │   feature_selector.py
-│       │   file112.txt
+│   │   cleaner.py
+│   │   dimen_reduction.py
+│   │   feature_selection.py
+│   │   
+│   └───images
+│       │   *.png/jpg/jpeg/gif/svg/webp
+│   
+└───README.md
 ```
 
 There are only a few classes in this modules most people will only be working with the `AutoCleaner` class, which as the name suggests automates all the tiresome work and gives you an elegant API to work with. <br>
@@ -171,7 +173,7 @@ cleaner.encode_categorical_columns("one-hot").temp_df.head()
 ![](./images/encoded.png)
 
 <b>Lets not forget we have not still use `.commit()` to persist our dataframe</b>
-### NB: if you do not want to call all the functions in the AutoCleaner class you can use `auto_clean` function to perform all the steps in one go. (but this is not recommended, its better to customize the hyperparameters as it suits your needs)
+#### NB: if you do not want to call all the functions in the AutoCleaner class you can use `auto_clean` function to perform all the steps in one go. (but this is not recommended, its better to customize the hyperparameters as it suits your needs)
 <br>
 
 ### Feature transformation 
