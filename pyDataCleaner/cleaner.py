@@ -326,6 +326,5 @@ class AutoCleaner:
 
         else:
             print("Please choose a valid encoding type")
-
         return self
     

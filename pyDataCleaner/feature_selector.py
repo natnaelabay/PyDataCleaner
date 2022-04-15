@@ -1,21 +1,33 @@
-from sklearn.datasets import make_regression
 import matplotlib as pt
 from sklearn.model_selection import train_test_split
 from sklearn.feature_selection import SelectKBest, f_regression
 from matplotlib import pyplot as pt
 import pandas as pd
 import numpy as np
+from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 
 
-def numerical_feature_selection(df, labels, test_size, percentage, k, selection_function=f_regression):
+def numerical_feature_selection(
+    df,
+    labels,
+    test_size,
+    k,
+    selection_function=f_regression
+):
     '''
+    For numerical features this method will select the best features and it has a few parameters to customize the process
+    and selection function.
+
     params: 
-        `df`: DataFrame
-        `test_size` : test_size from 0 - 1
-        `percentage` : train and test spliting percentage
-        `k` : number of features that will be selected
-        `selection_function` : A selection function if not provided default is f_regression/mutual_info_regression from the `sklearn.feature_selection` module. 
-        `labels` : list of column names that the model will try to predict
+        `df`: `required` : DataFrame
+        `test_size` : `required` : test_size from 0 - 1
+        `k` : `required` : number of features to select
+        `selection_function` : `required` : function to select features
+    return:
+        tuple(x_train, x_test, y_train, y_test)
+
     '''
     features = [col for col in df.columns.values if col not in labels]
     x_train, x_test, y_train, y_test = train_test_split(
@@ -43,8 +55,17 @@ def test_regression_model(
     y_test,
 ):
     '''
-    This methods tests a data set with a regression model
+    This function will test a numerical model provided the training and test data set using a simple LinearRegression model
+
+    params:
+        `x_train_ts` : `required` : training data set
+        `x_test_ts` : `required` : test data set
+        `y_train` : `required` : training labels
+        `y_test` : `required` : test labels
+    return:
+        tuple(x_train, x_test, y_train, y_test)    
     '''
+
     from sklearn.linear_model import LinearRegression
     from sklearn.metrics import mean_absolute_error
     from sklearn.metrics import mean_squared_error
@@ -58,8 +79,6 @@ def test_regression_model(
 
 
 # Categorical feature selection
-
-
 def categorical_feature_selection(
     df: pd.DataFrame,
     labels,
@@ -69,11 +88,15 @@ def categorical_feature_selection(
 ):
     '''
     This method will select categorical features
-    '''
-    from sklearn.feature_selection import SelectKBest, chi2
-    from sklearn.model_selection import train_test_split
-    from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
 
+    params:
+        `df`: `required` : DataFrame    
+        `test_size` : `required` : test_size from 0 - 1
+        `k` : `required` : number of features to select
+        `selection_func` : `required` : function to select features
+    return:
+        tuple(x_train, x_test, y_train, y_test)
+    '''
     features = [col for col in df.columns.values if col not in labels]
 
     features_df = df[features].astype(str)
@@ -85,7 +108,6 @@ def categorical_feature_selection(
     )
 
     # encode input features/data
-
     encoder = OrdinalEncoder()
     encoder.fit(x_train)
     x_train_encoded = encoder.transform(x_train)
@@ -122,7 +144,13 @@ def rfe_for_regression(
     y,
 ):
     '''
-    This method will test the model with the test data set
+    This method will select the best features using Recursive Feature Elimination
+
+    params:
+        `X` : `required` : training data set
+        `y` : `required` : training labels
+    return:
+        tuple(x_train, x_test, y_train, y_test)
     '''
 
     from numpy import mean
@@ -150,3 +178,41 @@ def rfe_for_regression(
 
     return model
 
+
+def feature_selection(
+    df, labels,
+    test_size,
+    k,
+    selection_function
+):
+    '''
+    This method is the same as numerical_feature_selection but can be used for more generic feature selection
+    by just passing in the selection function
+
+    params:
+        `df`: `required` : DataFrame
+        `test_size` : `required` : test_size from 0 - 1
+        `k` : `required` : number of features that will be selected
+        `selection_function` : `required` : A selection function that will be used as a parameter for `SelectKBest` 
+
+    returns:
+        tuple(x_train_fs, x_test_fs, y_train, y_test)
+    '''
+
+    features = [col for col in df.columns.values if col not in labels]
+    x_train, x_test, y_train, y_test = train_test_split(
+        df[features],
+        df[labels],
+        test_size=test_size
+    )
+
+    fs = SelectKBest(
+        score_func=selection_function,
+        k=k
+    )
+
+    fs.fit(x_train, y_train)
+    x_train_fs = fs.transform(x_train)
+    x_test_fs = fs.transform(x_test)
+    pt.bar([i for i in range(len(fs.scores_))], fs.scores_)
+    return x_train_fs, x_test_fs, y_train, y_test
