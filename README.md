@@ -191,6 +191,7 @@ function to perform all the steps in one go.
 (but this is not recommended, its better to customize the hyperparameters as it suits your needs)
 
 <br>
+
 ### Feature transformation 
 
 Feature selection methods are intended to reduce the number of input variables to those that are believed
@@ -304,6 +305,6 @@ test size and the selection function. and a tuple will be returned with the trai
 '''
 ```
 
-## Dimensionality reduction 
+<!-- ## Dimensionality reduction  -->
 
-TODO:  add dimensionality reduction (adding currently)
+<!-- TODO:  add dimensionality reduction (adding currently) -->
