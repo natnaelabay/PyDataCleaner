@@ -37,7 +37,7 @@ class OutlierDetector:
         # get both numerical and non-numerical columns
         
         if self.temp_df is None:
-            self.temp_df = self.df.copy()
+            self.temp_df = self.loader.df.copy()
         
         if non_numerical:
             non_numeric_columns = non_numerical
@@ -52,7 +52,6 @@ class OutlierDetector:
         else:
             numerical_columns = self.temp_df.select_dtypes(
                     include=np.number).columns.tolist()
-
             
         lower = self.temp_df[numerical_columns].quantile(0.25)
         upper = self.temp_df[numerical_columns].quantile(0.75)
@@ -64,9 +63,16 @@ class OutlierDetector:
 
         lower_bound = lower - cut_off
         upper_bound = upper + cut_off
-        updated_outlier = self.temp_df[((self.temp_df[numerical_columns] > lower_bound) | (
+        
+        self.temp_df = self.temp_df[((self.temp_df[numerical_columns] > lower_bound) | (
             self.temp_df[numerical_columns] < upper_bound))]
-        for col in non_numeric_columns:
-            updated_outlier[col] = self.temp_df[col]
 
-        return self
+        # for col in non_numeric_columns:
+        #     updated_outlier[col] = self.temp_df[col]
+
+        return self.temp_df
+
+    def perrsist(self):
+        if self.temp_df:
+            self.loader.df = self.temp_df.copy()
+        return self.loader.df
