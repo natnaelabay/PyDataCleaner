@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "PyEhealth"
+version = "0.1.0"
+description = "Python Package for Ethiopia Health System"
+authors = ["Rediet Million "]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+matplotlib = "^3.5.1"
+pyreadstat = "^1.1.4"
+pandas = "^1.4.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+jupyter = "^1.0.0"
+myst-nb = "^0.13.1"
+sphinx-autoapi = "^1.8.4"
+sphinx-rtd-theme = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

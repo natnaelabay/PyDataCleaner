@@ -4,7 +4,6 @@ import numpy as np
 from IPython.display import display
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder
-import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -15,7 +14,6 @@ import numpy as np
 from IPython.display import display
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder
-import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
